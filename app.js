@@ -14,47 +14,55 @@ file?parseExcel(file,rows=>{
 
 bucketRows = rows.filter(r => {
 
+  // Description (Commodity Description)
   const desc = String(firstExisting(r, ["CE Commodity Description", "Commodity Description", "Description"])).trim();
+
+  // Shipper Company (and modify order here if needed)
   const company = String(firstExisting(r, ["Shipper Company", "Shipper Name", "Company"])).trim();
+
+  // City (Modify City data filter)
   const city = String(firstExisting(r, ["Shpr City", "City", "Shipper City"])).toUpperCase();
+
+  // Reference Number
   const ref = String(firstExisting(r, ["Shipper Ref", "Reference Number", "Reference"])).trim();
+
+  // Value for filtering
   const value = numVal(firstExisting(r, ["Customs Value", "Declared Value", "Value"]));
 
+  // Modify the order of company and tracking number here if required
+  const trackingNumber = String(firstExisting(r, ["Tracking Number", "Shipment Number", "Invoice No"])).trim();
+  
   const upperCompany = company.toUpperCase();
 
-  /* description blank */
+  // Filter for description blank
   if (!desc) return false;
 
-  /* company ends with digits (NTN or other digits pattern) */
+  // Filter for company ending with digits
   if (/\d+$/.test(company)) return false;
 
-  /* Handling NTN inside brackets */
+  // Handling NTN inside brackets or with hyphen (adjusted as per the pattern required)
   if (/\(\s*(NTN[-:]?\s*\d+[-:]?\d*\s*)\)/i.test(company)) return false;
 
-  /* Handling NTN with hyphen in between */
+  // Handling NTN with hyphen in between
   if (/NTN[-:]?\s*\d{6,}-?\d+/i.test(company)) return false;
 
-  /* Handle -EFORM or -E FORM patterns */
+  // Handling -EFORM or -E FORM patterns
   if (/-E\s*FORM/i.test(company) || /-EFORM/i.test(company)) return false;
 
-  /* Check if there is a number after Shipper Company */
-  if (/\d{6,}/.test(company)) return false;
-
-  /* Handling cases like "10074747." */
+  // Handling unwanted number patterns like "10074747."
   if (/\d+\.$/.test(company)) return false;
 
-  /* Handling cases like "(3546889-8)" */
+  // Handling cases like "(3546889-8)"
   if (/\(\d+-\d+\)/.test(company)) return false;
 
-  /* Customs value >= 500 */
+  // Customs value >= 500
   if (value >= 500) return false;
 
-  /* City must be Sialkot */
+  // Only accept rows with City = Sialkot
   if (!(city.includes("SIALKOT") || city.includes("SKT") || city.includes("SKTA"))) return false;
 
   return true;
 });
-
 /* render table */
 
 renderTable(
