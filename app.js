@@ -28,8 +28,8 @@ if(!desc) return false;
 /* company end with digits */
 if(/\d+$/.test(company)) return false;
 
-/* NTN with different patterns (including backslash and hyphen) */
-if(/NTN[-:\\]*\d+[-:\\]*\d+/i.test(company)) return false;
+/* Detect NTN with optional letters, digits, hyphen, colon, and spaces */
+if(/NTN[:\s]*[A-Za-z]*[-\s]*\d+[-\s]*\d*/i.test(company)) return false;
 
 /* NTN with number */
 if(/NTN\s*\d+/i.test(company)) return false;
