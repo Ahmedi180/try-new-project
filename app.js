@@ -14,48 +14,45 @@ file?parseExcel(file,rows=>{
 
 bucketRows = rows.filter(r => {
 
-const desc = String(firstExisting(r,["CE Commodity Description","Commodity Description","Description"])).trim();
-const company = String(firstExisting(r,["Shipper Company","Shipper Name","Company"])).trim();
-const city = String(firstExisting(r,["Shpr City","City","Shipper City"])).toUpperCase();
-const ref = String(firstExisting(r,["Shipper Ref","Reference Number","Reference"])).trim();
-const value = numVal(firstExisting(r,["Customs Value","Declared Value","Value"]));
+  const desc = String(firstExisting(r, ["CE Commodity Description", "Commodity Description", "Description"])).trim();
+  const company = String(firstExisting(r, ["Shipper Company", "Shipper Name", "Company"])).trim();
+  const city = String(firstExisting(r, ["Shpr City", "City", "Shipper City"])).toUpperCase();
+  const ref = String(firstExisting(r, ["Shipper Ref", "Reference Number", "Reference"])).trim();
+  const value = numVal(firstExisting(r, ["Customs Value", "Declared Value", "Value"]));
 
-const upperCompany = company.toUpperCase();
+  const upperCompany = company.toUpperCase();
 
-/* description blank */
-if(!desc) return false;
+  /* description blank */
+  if (!desc) return false;
 
-/* company end with digits */
-if(/\d+$/.test(company)) return false;
+  /* company ends with digits (NTN or other digits pattern) */
+  if (/\d+$/.test(company)) return false;
 
-/* Detect NTN with optional letters, digits, hyphen, colon, and spaces */
-if(/NTN[:\s]*[A-Za-z]*[-\s]*\d+[-\s]*\d*/i.test(company)) return false;
+  /* Handling NTN inside brackets */
+  if (/\(\s*(NTN[-:]?\s*\d+[-:]?\d*\s*)\)/i.test(company)) return false;
 
-/* NTN with number */
-if(/NTN\s*\d+/i.test(company)) return false;
+  /* Handling NTN with hyphen in between */
+  if (/NTN[-:]?\s*\d{6,}-?\d+/i.test(company)) return false;
 
-/* -E FORM */
-if(upperCompany.endsWith("E FORM") || upperCompany.endsWith("-E FORM"))
-return false;
+  /* Handle -EFORM or -E FORM patterns */
+  if (/-E\s*FORM/i.test(company) || /-EFORM/i.test(company)) return false;
 
-/* -C */
-if(upperCompany.endsWith("-C"))
-return false;
+  /* Check if there is a number after Shipper Company */
+  if (/\d{6,}/.test(company)) return false;
 
-/* shipper ref start with 9 */
-if(ref.startsWith("9"))
-return false;
+  /* Handling cases like "10074747." */
+  if (/\d+\.$/.test(company)) return false;
 
-/* customs value >= 500 */
-if(value >= 500)
-return false;
+  /* Handling cases like "(3546889-8)" */
+  if (/\(\d+-\d+\)/.test(company)) return false;
 
-/* city must be sialkot */
-if(!(city.includes("SIALKOT") || city.includes("SKT") || city.includes("SKTA")))
-return false;
+  /* Customs value >= 500 */
+  if (value >= 500) return false;
 
-return true;
+  /* City must be Sialkot */
+  if (!(city.includes("SIALKOT") || city.includes("SKT") || city.includes("SKTA"))) return false;
 
+  return true;
 });
 
 /* render table */
