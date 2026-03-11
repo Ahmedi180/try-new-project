@@ -61,15 +61,15 @@ return true;
 /* render table */
 
 renderTable(
-"bucketBody",
-bucketRows.slice(0,20).map(r=>`
-<tr>
-<td>${escapeHtml(firstExisting(r,["Tracking Number","Shipment Number","Invoice No"]))}</td>
-<td>${escapeHtml(firstExisting(r,["Shipper Company","Shipper Name","Company"]))}</td>
-<td>${escapeHtml(firstExisting(r,["CE Commodity Description","Commodity Description","Description"]))}</td>
-<td>${escapeHtml(firstExisting(r,["Shpr City","City","Shipper City"]))}</td>
-</tr>
-`).join("") || '<tr><td colspan="4">No rows matched</td></tr>'
+  "bucketBody",
+  bucketRows.slice(0, 20).map(r => `
+    <tr>
+      <td>${escapeHtml(firstExisting(r, ["Tracking Number", "Shipment Number", "Invoice No"]))}</td> <!-- Tracking Number -->
+      <td>${escapeHtml(firstExisting(r, ["Shipper Company", "Shipper Name", "Company"]))}</td> <!-- Shipper Company -->
+      <td>${escapeHtml(firstExisting(r, ["CE Commodity Description", "Commodity Description", "Description"]))}</td> <!-- Description -->
+      <td>${escapeHtml(firstExisting(r, ["City", "Shipper City", "Address", "Shpr Addl Addr"]))}</td> <!-- City -->
+    </tr>
+  `).join("") || '<tr><td colspan="4">No rows matched</td></tr>'
 );
 
 setText("bucketTotal",bucketRows.length);
