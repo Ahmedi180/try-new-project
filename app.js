@@ -25,8 +25,14 @@ const upperCompany = company.toUpperCase();
 /* description blank */
 if(!desc) return false;
 
-/* company end with digits (NTN) */
+/* company end with digits */
 if(/\d+$/.test(company)) return false;
+
+/* NTN inside brackets */
+if(/\(\s*(NTN)?\s*\d+/i.test(company)) return false;
+
+/* NTN with number */
+if(/NTN\s*\d+/i.test(company)) return false;
 
 /* -E FORM */
 if(upperCompany.endsWith("E FORM") || upperCompany.endsWith("-E FORM"))
