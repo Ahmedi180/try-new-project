@@ -94,32 +94,29 @@ bucketRows = rows.filter(r => {
   
   const upperCompany = company.toUpperCase();
 
-  // Filter for description blank
-  if (!desc) return false;
+  // description blank
+if (!desc) return false;
 
-  // Filter for company ending with digits
-  if (/\d+$/.test(company)) return false;
+// company contains digits (most NTN patterns)
+if (/\d{4,}/.test(company)) return false;
 
-  // Handling NTN inside brackets or with hyphen (adjusted as per the pattern required)
-  if (/\(\s*(NTN[-:]?\s*\d+[-:]?\d*\s*)\)/i.test(company)) return false;
+// NTN text detection
+if (/NTN/i.test(company)) return false;
 
-  // Handling NTN with hyphen in between
-  if (/NTN[-:]?\s*\d{6,}-?\d+/i.test(company)) return false;
+// NTN inside brackets
+if (/\([A-Z]?\d{5,}\)/i.test(company)) return false;
 
-  // Handling -EFORM or -E FORM patterns
-  if (/-E\s*FORM/i.test(company) || /-EFORM/i.test(company)) return false;
+// NTN with hyphen patterns
+if (/\d{5,}-\d+/i.test(company)) return false;
 
-  // Handling unwanted number patterns like "10074747."
-  if (/\d+\.$/.test(company)) return false;
+// EFORM patterns
+if (/-E\s*FORM/i.test(company) || /-EFORM/i.test(company)) return false;
 
-  // Handling cases like "(3546889-8)"
-  if (/\(\d+-\d+\)/.test(company)) return false;
+// value check
+if (value >= 500) return false;
 
-  // Customs value >= 500
-  if (value >= 500) return false;
-
-  // Only accept rows with City = Sialkot
-  if (!(city.includes("SIALKOT") || city.includes("SKT") || city.includes("SKTA"))) return false;
+// Sialkot city filter
+if (!(city.includes("SIALKOT") || city.includes("SKT") || city.includes("SKTA"))) return false;
 
   return true;
 });
