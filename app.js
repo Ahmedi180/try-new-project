@@ -171,6 +171,62 @@ function closeAddNew(){const m=document.getElementById("addEditModal");if(m)m.st
 function editCompany(index){const db=getDB(),item=db[index];if(!item)return;companyEditIndex=index;document.getElementById("addEditTitle").textContent="Edit Company + NTN";document.getElementById("companyNameInput").value=titleCase(item.company);document.getElementById("companyNTNInput").value=item.ntn;document.getElementById("addEditModal").style.display="flex"}
 function saveCompanyFromModal(){const db=getDB(),company=normalize(document.getElementById("companyNameInput").value),ntn=String(document.getElementById("companyNTNInput").value||"").trim();if(!company||!ntn){alert("Enter company and NTN");return}if(companyEditIndex===-1)db.push({company,ntn});else db[companyEditIndex]={company,ntn};saveDB(db);closeAddNew();renderManageCompanies(document.getElementById("companySearchManage")?.value||"");runLiveCompanySearch()}
 function deleteSelectedCompanies(){const checks=Array.from(document.querySelectorAll(".company-select:checked"));if(!checks.length){alert("No company selected");return}const db=getDB(),indexes=checks.map(c=>Number(c.dataset.index)).sort((a,b)=>b-a);indexes.forEach(i=>{if(i>=0)db.splice(i,1)});saveDB(db);renderManageCompanies(document.getElementById("companySearchManage")?.value||"");runLiveCompanySearch()}
-function importCompaniesFromExcel(file){parseExcel(file,rows=>{const db=getDB();rows.forEach(r=>{const companyRaw=firstExisting(r,["Company Name","Company","company","Name"]),ntnRaw=firstExisting(r,["NTN","NTN Number","ntn"]),company=normalize(companyRaw),ntn=String(ntnRaw||"").trim();if(company&&ntn)db.push({company,ntn})});saveDB(db);alert("Companies imported successfully");runLiveCompanySearch();renderManageCompanies(document.getElementById("companySearchManage")?.value||"")})}
+function importCompaniesFromExcel(file){
+
+parseExcel(file,rows=>{
+
+const db = getDB();
+let added = 0;
+
+rows.forEach(r=>{
+
+const companyRaw = firstExisting(r,[
+"Company Name",
+"Company",
+"company",
+"Name"
+]);
+
+const ntnRaw = firstExisting(r,[
+"NTN",
+"NTN Number",
+"NTN No",
+"ntn"
+]);
+
+const company = normalize(companyRaw);
+const ntn = String(ntnRaw || "").trim();
+
+if(!company || !ntn) return;
+
+/* duplicate check */
+const exists = db.find(x=>x.company===company);
+
+if(!exists){
+
+db.push({
+company: company,
+ntn: ntn
+});
+
+added++;
+
+}
+
+});
+
+saveDB(db);
+
+alert(added + " companies imported successfully");
+
+runLiveCompanySearch();
+
+renderManageCompanies(
+document.getElementById("companySearchManage")?.value || ""
+);
+
+});
+
+}
 function initSearchEnhanced(){const input=document.getElementById("companySearch"),searchBtn=document.getElementById("searchBtn"),saveModalBtn=document.getElementById("saveCompanyBtn"),excelUpload=document.getElementById("excelUpload"),manageSearch=document.getElementById("companySearchManage"),selectAll=document.getElementById("selectAllCompanies");if(input)input.addEventListener("input",runLiveCompanySearch);if(searchBtn)searchBtn.onclick=runLiveCompanySearch;if(saveModalBtn)saveModalBtn.onclick=saveCompanyFromModal;if(excelUpload)excelUpload.addEventListener("change",()=>{const file=excelUpload.files[0];if(file)importCompaniesFromExcel(file)});if(manageSearch)manageSearch.addEventListener("input",function(){renderManageCompanies(this.value)});if(selectAll)selectAll.addEventListener("change",function(){document.querySelectorAll(".company-select").forEach(cb=>cb.checked=this.checked)});renderSearchResults([], "")}
 document.addEventListener("DOMContentLoaded",initSearchEnhanced);
