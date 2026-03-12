@@ -49,11 +49,15 @@ function initMissing() {
   });
 
   // Export filtered rows
-  document.getElementById("missingExportBtn").onclick = () => {
+const missingExportBtn = document.getElementById("missingExportBtn");
+
+if (missingExportBtn) {
+  missingExportBtn.onclick = () => {
     missingRows.length
       ? downloadRows(missingRows, "NTN_Missing_Result.xlsx", "NTN Missing")
       : alert("No result to export");
   };
+}
 }
 
 function initBucket(){
@@ -139,15 +143,22 @@ setText("bucketTotal",bucketRows.length);
 
 });
 
-document.getElementById("bucketExportBtn").onclick=()=>{
+const bucketExportBtn = document.getElementById("bucketExportBtn");
 
-bucketRows.length
-?downloadRows(bucketRows,"Bucket_Shop_Result.xlsx","Bucket Shop")
-:alert("No result to export");
+if(bucketExportBtn){
 
-};
+  bucketExportBtn.onclick = ()=>{
+
+    bucketRows.length
+    ? downloadRows(bucketRows,"Bucket_Shop_Result.xlsx","Bucket Shop")
+    : alert("No result to export");
+
+  };
 
 }
+
+}
+
 
 let dupRows=[];function initDuplicate(){setFileName("dupFile","dupFileName");const p=document.getElementById("dupProcessBtn");p&&(p.onclick=()=>{const file=document.getElementById("dupFile").files[0];file?parseExcel(file,rows=>{const count={};rows.forEach(r=>{const t=normalize(firstExisting(r,["Tracking Number","Shipment Number","Invoice No"]));t&&(count[t]=(count[t]||0)+1)}),dupRows=rows.map(r=>{const t=normalize(firstExisting(r,["Tracking Number","Shipment Number","Invoice No"]));return{...r,__dup:!!(t&&count[t]>1)}}).sort((a,b)=>Number(b.__dup)-Number(a.__dup)),renderTable("dupBody",dupRows.slice(0,20).map(r=>`<tr class="${r.__dup?"row-alert":""}"><td>${escapeHtml(firstExisting(r,["Tracking Number","Shipment Number","Invoice No"]))}</td><td>${escapeHtml(firstExisting(r,["Shipper Company","Shipper Name","Company"]))}</td><td class="${r.__dup?"status-missing":"status-valid"}">${r.__dup?"DUPLICATE":"UNIQUE"}</td></tr>`).join("")||'<tr><td colspan="3">No rows found</td></tr>'),setText("dupTotal",dupRows.length),setText("dupCount",dupRows.filter(x=>x.__dup).length)}):alert("Upload Excel file first")},document.getElementById("dupExportBtn").onclick=()=>{dupRows.length?downloadRows(dupRows.filter(x=>x.__dup).map(({__dup,...r})=>r),"Duplicate_Shipments.xlsx","Duplicate"):alert("No result to export")})}function initSearch(){const btn=document.getElementById("searchBtn");btn&&(btn.onclick=()=>{const q=normalize(document.getElementById("companySearch").value),found=getDB().filter(x=>x.company.includes(q));setText("ntnSearchInfo",`Showing ${found.length} result${1===found.length?"":"s"} for "${q}":`),renderTable("ntnSearchBody",found.length?found.map(r=>`<tr><td>${escapeHtml(titleCase(r.company))}</td><td>${escapeHtml(r.ntn)}</td></tr>`).join(""):'<tr><td colspan="2">No result found</td></tr>')});const addBtn=document.getElementById("addNtnBtn");addBtn&&(addBtn.onclick=()=>{const c=normalize(document.getElementById("newCompany").value),n=String(document.getElementById("newNtn").value||"").trim();if(!c||!n)return alert("Enter company and NTN");const db=getDB();db.push({company:c,ntn:n}),saveDB(db),alert("Company and NTN saved"),document.getElementById("newCompany").value="",document.getElementById("newNtn").value=""})}let autoRows=[];function initAutoUpdate(){setFileName("autoFile","autoFileName");const p=document.getElementById("autoProcessBtn");p&&(p.onclick=()=>{const file=document.getElementById("autoFile").files[0];file?parseExcel(file,rows=>{const db=getDB();autoRows=rows.map(r=>{const company=normalize(firstExisting(r,["Shipper Company","Shipper Name","Company"])),found=db.find(x=>x.company===company);return{...r,NTN:found?found.ntn:"",__missing:!found}}).sort((a,b)=>Number(b.__missing)-Number(a.__missing)),renderTable("autoBody",autoRows.slice(0,20).map(r=>`<tr class="${r.__missing?"row-alert":""}"><td>${escapeHtml(firstExisting(r,["Shipper Company","Shipper Name","Company"]))}</td><td>${escapeHtml(r.NTN)}</td><td class="${r.__missing?"status-missing":"status-valid"}">${r.__missing?"MISSING":"FILLED"}</td></tr>`).join("")||'<tr><td colspan="3">No rows found</td></tr>'),setText("autoTotal",autoRows.length),setText("autoMissing",autoRows.filter(x=>x.__missing).length)}):alert("Upload Excel file first")},document.getElementById("autoExportBtn").onclick=()=>{autoRows.length?downloadRows(autoRows.map(({__missing,...r})=>r),"Auto_NTN_Updated.xlsx","Auto NTN Update"):alert("No result to export")})}document.addEventListener("DOMContentLoaded",()=>{protectPage(),bootstrapLogin(),initHS(),initMissing(),initBucket(),initDuplicate(),initSearch(),initAutoUpdate()});
 
